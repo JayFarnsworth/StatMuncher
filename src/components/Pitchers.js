@@ -49,32 +49,78 @@ class Pitchers extends Component {
   getPitcherData = (homePitcher, awayPitcher) => {
     let homeUrlId = homePitcher.bref_id;
     let awayUrlId = awayPitcher.bref_id;
+    let homeID = homePitcher.ID;
+    let awayID = awayPitcher.ID;
     var homeStats = async () => {
       const response = await fetch('http://localhost:4000/scrapepitcher/?pitcher=' + homeUrlId)
       const json = await response.json()
       if (json.length > 0) {
         this.setState({ homePitcherStats: json[0] }, () => {
-          this.setState({ homeStatsFiltered: this.filterStatYear(json[0])[0] })
+          this.setState({ homeStatsFiltered: this.filterStatYear(json[0])[0] }, () => {homeOPS()})
         })
       }
     }
     var awayStats = async () => {
       const response = await fetch('http://localhost:4000/scrapepitcher/?pitcher=' + awayUrlId)
       const json = await response.json()
+      console.log(json)
       if (json.length > 0){
         this.setState({ awayPitcherStats: json[0] }, () => {
-          this.setState({ awayStatsFiltered: this.filterStatYear(json[0])[0] })
+          this.setState({ awayStatsFiltered: this.filterStatYear(json[0])[0] }, () => {awayOPS()})
         })
+      }
+    }
+    var homeOPS = async () => {
+      var headers = {
+        'Authorization': 'Basic a3Vicmlja2FuOkgzbHRvbjE3MTcu',
+        'content-type': 'application/json'
+      };
+      var url = 'https://api.mysportsfeeds.com/v1.2/pull/mlb/' + this.state.statYear + '-regular/cumulative_player_stats.json?playerstats=OPS&player=' + homeID;
+      const response = await fetch(url, {
+        credentials: 'same-origin',
+        headers: headers,
+        method: 'GET',
+        mode: 'cors'
+      });
+      const json = await response.json();
+      if (json.cumulativeplayerstats.playerstatsentry) {
+        var OPS = json.cumulativeplayerstats.playerstatsentry[0].stats.PitcherOnBasePlusSluggingPct['#text'];
+        var homeStats = this.state.homeStatsFiltered;
+        homeStats.OPS = OPS;
+        this.setState({homeStats: homeStats, homeOPS: OPS})
+      }
+    }
+    var awayOPS = async () => {
+      var headers = {
+        'Authorization': 'Basic a3Vicmlja2FuOkgzbHRvbjE3MTcu',
+        'content-type': 'application/json'
+      };
+      var url = 'https://api.mysportsfeeds.com/v1.2/pull/mlb/' + this.state.statYear + '-regular/cumulative_player_stats.json?playerstats=OPS&player=' + awayID;
+      const response = await fetch(url, {
+        credentials: 'same-origin',
+        headers: headers,
+        method: 'GET',
+        mode: 'cors'
+      });
+      const json = await response.json();
+      if (json.cumulativeplayerstats.playerstatsentry) {
+        var OPS = json.cumulativeplayerstats.playerstatsentry[0].stats.PitcherOnBasePlusSluggingPct['#text'];
+        var awayStats = this.state.awayStatsFiltered;
+        awayStats.OPS = OPS;
+        this.setState({ awayStats: awayStats, awayOPS: OPS })
       }
     }
     homeStats();
     awayStats();
   }
+
+
   filterStatYear = (pitcherStats) => {
     let statYear = this.state.statYear;
     let yearFiltered = pitcherStats.filter(year=>{
       if (statYear === year.Year && ((year.Lg == 'NL') || (year.Lg == 'AL'))) return year
     })
+    console.log(yearFiltered)
     return yearFiltered;
   }
   sendPitcherData = (home, away) => {
@@ -113,6 +159,7 @@ class Pitchers extends Component {
                     <th>IP</th>
                     <th>ERA</th>
                     <th>WHIP</th>
+                    <th>OPS</th>
                   </tr>
                   <tbody>
                     <tr>
@@ -120,6 +167,7 @@ class Pitchers extends Component {
                       <td>{this.state.awayStatsFiltered.IP}</td>
                       <td>{this.state.awayStatsFiltered.ERA}</td>
                       <td>{this.state.awayStatsFiltered.WHIP}</td>
+                      <td>{this.state.awayStatsFiltered.OPS}</td>
                     </tr>
                   </tbody>
                 </table> : '' }
@@ -142,6 +190,7 @@ class Pitchers extends Component {
                     <th>IP</th>
                     <th>ERA</th>
                     <th>WHIP</th>
+                    <th>OPS</th>
                   </tr>
                   <tbody>
                     <tr>
@@ -149,6 +198,7 @@ class Pitchers extends Component {
                       <td>{this.state.homeStatsFiltered.IP}</td>
                       <td>{this.state.homeStatsFiltered.ERA}</td>
                       <td>{this.state.homeStatsFiltered.WHIP}</td>
+                      <td>{this.state.homeStatsFiltered.OPS}</td>
                     </tr>
                   </tbody>
                 </table> : ''}

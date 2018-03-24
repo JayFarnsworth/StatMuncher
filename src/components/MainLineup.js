@@ -158,8 +158,8 @@ class MainLineup extends Component {
                   <h2>{player.player.FirstName + ' ' + player.player.LastName}</h2>
                 </div>
                 <div className='player-scores'>
-                  <h3>Matchup +25</h3>
-                  <h3>Hotness +46</h3>
+                    {(player.stats) ? <div><h3>Matchup: {this.state.homeOPS - player.stats.OPS}</h3>
+                      <h3>Hotness +46</h3></div> : null}
                 </div>
               </div>
                 {(player.stats) ? <table>
@@ -171,7 +171,7 @@ class MainLineup extends Component {
                     <th>HR</th>
                     <th>BB%</th>
                     <th>SO%</th>
-                    <th>SLG</th>
+                    <th>OPS</th>
                   </tr>
                   <tr>
                     <td>2017</td>
@@ -181,7 +181,7 @@ class MainLineup extends Component {
                     <td>{player.stats.HR}</td>
                     <td>{((player.stats.BB / player.stats.PA) * 100).toFixed(1)}%</td>
                     <td>{((player.stats.SO / player.stats.PA) * 100).toFixed(1)}%</td>
-                    <td>{player.stats.SLG}</td>
+                    <td>{player.stats.OPS}</td>
                   </tr>
                   <tr>
                     <td>vs Pitcher</td>
@@ -191,7 +191,7 @@ class MainLineup extends Component {
                     <td>{(player.matchup) ? player.matchup.HR : 'N/A'}</td>
                     <td>{(player.matchup) ? ((player.matchup.BB / player.matchup.PA) * 100).toFixed(1) : 'N/A'}%</td>
                     <td>{(player.matchup) ? ((player.matchup.SO / player.matchup.PA) * 100).toFixed(1) : 'N/A'}%</td>
-                    <td>{(player.matchup) ? player.matchup.SLG : 'N/A'}</td>
+                    <td>{(player.matchup) ? player.matchup.OPS : 'N/A'}</td>
                   </tr>
                 </table> : ''}
             </div>
