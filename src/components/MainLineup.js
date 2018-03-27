@@ -17,39 +17,39 @@ class MainLineup extends Component {
   }
 
   componentDidMount(){
-    var players = player_list;
-    let homeLineup = this.props.homeLineup;
-    let home = homeLineup.actual.starter.filter(position=>{
-      if (position.position[0] == 'B') return position;
-    })
-    home.sort((a,b)=>{
-      if (a.position[2] > b.position[2]) return 1;
-      if (a.position[2] < b.position[2]) return -1;
-    })
-    this.setState({homeLineup: home})
-    let awayLineup = this.props.awayLineup;
-    let away = awayLineup.actual.starter.filter(position=>{
-      if (position.position[0] == 'B') return position;
-    })
-    away.sort((a,b) => {
-      if (a.position[2] > b.position[2]) return 1;
-      if (a.position[2] < b.position[2]) return -1;
-    })
-    away.map(player=>{
-      var id = player.player.ID;
-      var info = players.filter(player=>{
-        if (player.player.ID === id) return player
-      })
-      player.info = info[0].player;
-      return player;
-    })
-    this.setState({awayColors: this.props.awayColors})
+    // var players = player_list;
+    // let homeLineup = this.props.homeLineup;
+    // let home = homeLineup.actual.starter.filter(position=>{
+    //   if (position.position[0] == 'B') return position;
+    // })
+    // home.sort((a,b)=>{
+    //   if (a.position[2] > b.position[2]) return 1;
+    //   if (a.position[2] < b.position[2]) return -1;
+    // })
+    // this.setState({homeLineup: home})
+    // let awayLineup = this.props.awayLineup;
+    // let away = awayLineup.actual.starter.filter(position=>{
+    //   if (position.position[0] == 'B') return position;
+    // })
+    // away.sort((a,b) => {
+    //   if (a.position[2] > b.position[2]) return 1;
+    //   if (a.position[2] < b.position[2]) return -1;
+    // })
+    // away.map(player=>{
+    //   var id = player.player.ID;
+    //   var info = players.filter(player=>{
+    //     if (player.player.ID === id) return player
+    //   })
+    //   player.info = info[0].player;
+    //   return player;
+    // })
+    // this.setState({awayColors: this.props.awayColors})
     
-    this.setState({awayLineup: away}, () => {
-      away.map((player, i)=>{
-        this.getJSON(player, i)
-      })
-    })
+    // this.setState({awayLineup: away}, () => {
+    //   away.map((player, i)=>{
+    //     // this.getJSON(player, i)
+    //   })
+    // })
   }
   fetchBatter = (batter) => {
     let id = batter.info.bref_id;
@@ -132,6 +132,25 @@ class MainLineup extends Component {
     })
     this.setState({ filteredLineup: lineup })
   }
+  getMatchupScore = (stats) => {
+    if (stats == 'no data') {
+      return 'No History'
+    } else {
+      var AB = Number(stats.AB) * -1;
+      var H = Number(stats.H) * 2;
+      var Double = Number(stats['2B']) * 2;
+      var Triple = Number(stats['3B']) * 3;
+      var HR = Number(stats.HR) * 4;
+      var RBI = Number(stats.RBI) * 2;
+      var SO = Number(stats.SO) * -1;
+      var BB = Number(stats.BB) * 1;
+      var OPSDifference = (Number(stats.OPS) - .750) * 10;
+      var OPSScore = Number(stats.AB) * OPSDifference;
+      var matchupScore = AB + H + Double + Triple + HR + RBI + SO + BB
+      if (Number(stats.AB > 5)) matchupScore += OPSScore;
+      return matchupScore.toFixed(1);
+    }
+  }
 
 
 
@@ -143,29 +162,27 @@ class MainLineup extends Component {
     } } 
     return (
       <div>
-        {(this.state.awayLineup) ? this.state.awayLineup.map((player, i)=>{
+        {(true) ? this.props.gameObj.awayTeam.lineup.map((player, i)=>{
           return (
-          <div className='home-player' style={awayStyle}>
+          <div className='home-player' >
           <div className='pos-bo'>
-            <h1>{i + 1})</h1>
-            <h1>{player.player.Position}</h1>
+            <h1>{player.batOrder})</h1>
+            <h1>{player.position}</h1>
           </div>
-              <img src={player.info.officialImageSrc} className='lineup-pic' style={{
-                border: '3px solid ' + this.props.awayColors.colors.secondary,}}/>
+              <img src={player.info.Image} className='lineup-pic' />
             <div className='lineup-text'>
               <div>
                 <div className='lineup-header'>
-                  <h2>{player.player.FirstName + ' ' + player.player.LastName}</h2>
+                  <h2>{player.info.LastName}, {player.info.FirstName}</h2>
                 </div>
                 <div className='player-scores'>
-                    {(player.stats) ? <div><h3>Matchup: {this.state.homeOPS - player.stats.OPS}</h3>
-                      <h3>Hotness +46</h3></div> : null}
+                    <h3>Matchup: {this.getMatchupScore(player.matchup)}</h3>
                 </div>
               </div>
-                {(player.stats) ? <table>
+                <table>
                   <tr>
                     <th></th>
-                    <th>PA</th>
+                    <th>AB</th>
                     <th>AVG</th>
                     <th>RBI</th>
                     <th>HR</th>
@@ -175,25 +192,25 @@ class MainLineup extends Component {
                   </tr>
                   <tr>
                     <td>2017</td>
-                    <td>{player.stats.PA}</td>
-                    <td>{player.stats.BA}</td>
-                    <td>{player.stats.RBI}</td>
-                    <td>{player.stats.HR}</td>
-                    <td>{((player.stats.BB / player.stats.PA) * 100).toFixed(1)}%</td>
-                    <td>{((player.stats.SO / player.stats.PA) * 100).toFixed(1)}%</td>
-                    <td>{player.stats.OPS}</td>
+                    <td>{player.stats.stats.AB}</td>
+                    <td>{player.stats.stats.BA}</td>
+                    <td>{player.stats.stats.RBI}</td>
+                    <td>{player.stats.stats.HR}</td>
+                    <td>{((player.stats.stats.BB / player.stats.stats.PA) * 100).toFixed(1)}%</td>
+                    <td>{((player.stats.stats.SO / player.stats.stats.PA) * 100).toFixed(1)}%</td>
+                    <td>{player.stats.stats.OPS}</td>
                   </tr>
                   <tr>
-                    <td>vs Pitcher</td>
-                    <td>{(player.matchup) ? player.matchup.PA : 'N/A'}</td>
-                    <td>{(player.matchup) ? player.matchup.BA : 'N/A'}</td>
-                    <td>{(player.matchup) ? player.matchup.RBI : 'N/A'}</td>
-                    <td>{(player.matchup) ? player.matchup.HR : 'N/A'}</td>
-                    <td>{(player.matchup) ? ((player.matchup.BB / player.matchup.PA) * 100).toFixed(1) : 'N/A'}%</td>
-                    <td>{(player.matchup) ? ((player.matchup.SO / player.matchup.PA) * 100).toFixed(1) : 'N/A'}%</td>
-                    <td>{(player.matchup) ? player.matchup.OPS : 'N/A'}</td>
+                    <td>vs {this.props.gameObj.homeTeam.pitcher.LastName}</td>
+                    <td>{player.matchup.AB}</td>
+                    <td>{player.matchup.BA}</td>
+                    <td>{player.matchup.RBI}</td>
+                    <td>{player.matchup.HR}</td>
+                    <td>{((player.matchup.BB / player.matchup.PA) * 100).toFixed(1)}%</td>
+                    <td>{((player.matchup.SO / player.matchup.PA) * 100).toFixed(1)}%</td>
+                    <td>{player.matchup.OPS}</td>
                   </tr>
-                </table> : ''}
+                </table>
             </div>
           </div>)
         }) : ''}

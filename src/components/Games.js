@@ -11,49 +11,28 @@ class Games extends Component {
     }
   }
   componentDidMount = () => {
-    let url = 'https://api.mysportsfeeds.com/v1.2/pull/mlb/2017-regular/daily_game_schedule.json?fordate=20170905';
-    let headers = {
-      'Authorization': 'Basic a3Vicmlja2FuOkgzbHRvbjE3MTcu',
-      'content-type': 'application/json'
-    }
+    let url = 'http://localhost:4000/games/?date=20170920';
     var games = async () => {
       const response = await fetch(url, {
         credentials: 'same-origin',
-        headers: headers,
         method: 'GET',
         mode: 'cors'
       });
       const json = await response.json();
-      let gameList = json.dailygameschedule.gameentry;
-      this.setState({ games: gameList });
+      this.setState({ games: json });
     } 
     games();
   }
   fetchDailyStarters = (event) => {
     var gameId = event.currentTarget.id;
-    this.setState({selectedGame: gameId});
-    let url = 'https://api.mysportsfeeds.com/v1.2/pull/mlb/2017-regular/game_startinglineup.json?gameid=' + gameId;
-    let headers = {
-      'Authorization': 'Basic a3Vicmlja2FuOkgzbHRvbjE3MTcu',
-      'content-type': 'application/json'
-    };
-    var lineup = async () => {
-      const response = await fetch(url, {
-        credentials: 'same-origin',
-        headers: headers,
-        method: 'GET',
-        mode: 'cors'
-      });
-      const json = await response.json();
-      let gameData = json.gamestartinglineup;
-      this.setState({ gameData: gameData });
-      this.sendGameData(gameData)
-    }
-    lineup();
-    
+    this.sendGameData(gameId)
+    this.setState({selectedGame: gameId})
   }
-  sendGameData = (data) => {
-    this.props.setGameData(data)
+    
+  
+  
+  sendGameData = (id) => {
+    this.props.setGameData(id)
   }
 
   

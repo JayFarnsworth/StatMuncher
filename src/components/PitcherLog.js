@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PitcherLog() {
+export default function PitcherLog({Logs}) {
   return (
     <div className='pitcher-game-log'>
       <div className='pitcher-game a'>
