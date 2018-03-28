@@ -11,7 +11,7 @@ class Games extends Component {
     }
   }
   componentDidMount = () => {
-    let url = 'http://localhost:4000/games/?date=20170920';
+    let url = 'http://localhost:4000/gamesfetch/?date=20170920';
     var games = async () => {
       const response = await fetch(url, {
         credentials: 'same-origin',

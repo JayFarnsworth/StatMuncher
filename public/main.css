@@ -58,20 +58,39 @@ header {
 	background-color: black;
 	display: flex;
 	flex-direction: row;
-	justify-content: center;
+	justify-content: flex-start;
+	align-items: center;
 }
 header h1 {
 	font-size: 3rem;
 	color: white;
 	font-family: sans-serif;
 	font-family: 'Bangers', cursive;
-
+	margin-left: 2vw;
 }
+
+#logo {
+	height: 6vh;
+	width: auto;
+	margin-left: 1vw;
+	animation: spin 2s 3;
+}
+.spin {
+	animation: spin 2s;
+}
+    @keyframes spin { 
+        from { 
+            transform: rotate(0deg); 
+        } to { 
+            transform: rotate(360deg); 
+        }
+    }
 
 .matchup-container {
 	background-image: url('https://www.theclassicarchives.com/images/ebaypics/F99/baseball.jpg');
 	background-size: 100%;
 	background-attachment: fixed;
+	transition: .2s ease-in;
 }
 .matchup-container:after {
 	background-image: url('https://www.theclassicarchives.com/images/ebaypics/F99/baseball.jpg');
@@ -86,6 +105,9 @@ header h1 {
 }
 .preload {
 	height: 93vh;
+}
+.lineup-wrapper {
+	background-color: transparent;
 }
 /* pitcher */
 .pitcher-card {
@@ -267,8 +289,8 @@ box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
 	height: 10vh;
 	width: 30vw;
 	background-color: purple;
-	border-top-left-radius: 5vh;
-	border-bottom-left-radius: 5vh;
+	border-top-left-radius: 5.5vh;
+	border-bottom-left-radius: 5.5vh;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -286,8 +308,8 @@ box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
 	height: 10vh;
 	width: 30vw;
 	background-color: cornflowerblue;
-	border-top-right-radius: 5vh;
-	border-bottom-right-radius: 5vh;
+	border-top-right-radius: 5.5vh;
+	border-bottom-right-radius: 5.5vh;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -325,23 +347,170 @@ box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
 }
 
 /* players */
-.home-player {
-	left: 0px;
+.roster-wrapper {
+	display: flex;
+	flex-direction: row;
+}
+.player-container {
+	margin-top: 3vh;
+	overflow: hidden;
+	padding: 3vh;
+	padding-left: 0;
+	z-index: 5;
+	transition: all .5s ease-out;
+}
+.player {
 	height: 15vh;
 	width: 80vw;
 	background-color: rgba(128, 128, 128, 0.822);
-	margin-top: 3vh;
-	padding-left: .5vw;
-	border-top-right-radius: 7.5vh;
-	border-bottom-right-radius: 7.5vh;
 	border: 3px solid white;
-	border-left: none;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
--webkit-box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
--moz-box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
-box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
+	transition: all .5s ease-in;
+	position: relative;
+	z-index: 6;
+	overflow: hidden;
+	-webkit-box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
+  -moz-box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
+  box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
+}
+.home-container {
+	transition: all .5s ease-in;
+}
+.away-container {
+	transition: all .5s ease-in;
+}
+.home {
+	border-top-left-radius: 8vh;
+	border-bottom-left-radius: 8vh;
+	border-right: none;
+	transform: translateX(-76%);
+	transition: all .5s ease-out;
+}
+.away {
+	padding-left: .5vw;
+	border-left: none;
+	border-top-right-radius: 8vh;
+	border-bottom-right-radius: 8vh;
+	transition: all .5s ease-out;
+}
+.away-hidden {
+	transform: translateX(-90%);
+	transition: all .5s ease-in;
+}
+.home-hidden {
+	transform: translateX(90%);
+	transition: all .5s ease-in;
+}
+.popup-top {
+	transition: all .5s ease-out;
+	position: relative;
+	z-index: 0;
+}
+.pop-border {
+	border-top-right-radius: .8vh;
+	border-bottom-right-radius: .8vh;
+	height: 1vh;
+	width: 76vw;
+	background-color: black;
+	position: relative;
+	transition: all .5 ease-out;
+	z-index: 0;
+}
+.collapsed {
+	transform: translateY(90%);
+	transition: all .5s ease-out;
+	z-index: 0;
+	position: relative;
+}
+.none {
+	display: none;
+}
+.bottom-collapsed {
+	transform: translateY(-95%);
+	transition: all .5s ease-out;
+	z-index: 0;
+}
+@keyframes bottom-slide {
+	0% {
+		opacity: 1;
+	}
+	95% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+.below-container {
+	transition: all .5s ease-out;
+	position: relative;
+	z-index: 1;
+}
+.game-log {
+	height: 10vh;
+	width: 7.5vw;
+	border-right: 1px solid black;
+	border-left: 1px solid black;
+	color: white;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	font-family: 'Roboto', sans-serif;
+	transition: all .5s ease-out;
+	z-index: 0;
+}
+.out-left {
+	transform: translateX(-150%);
+	transition: all .5s ease-in;
+  transition-delay: 2s;
+}
+.game-stats-container {
+	height: 7vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: space-between;
+}
+.log-date {
+	background-color:rgba(77, 77, 77, 0.749);
+	height: 3vh;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1rem;
+}
+.top-pop {
+	width: 75vw;
+	height: 10vh;
+	background-color:rgba(128, 128, 128, 0.7);
+	display: flex;
+	flex-direction: row;
+	transition: all .5s ease-out;
+	z-index: 0;
+}
+.stats-below {
+	height: 15vh;
+	width: 75vw;
+	background-color:rgba(128, 128, 128, 0.7);
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	transition: all .5s ease-out;
+	animation: .5s bottom-slide 1;
+	z-index: 0;
+}
+.hidden {
+	z-index: 0;
+}
+.collapsed-space {
+	transition: all .5s ease-out;
+	margin-bottom: -15vh;
 }
 .home-player:nth-child(1){
 	animation: home-player-in 3s 1;
@@ -355,9 +524,9 @@ box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
 .home-player:nth-child(4){
 	animation: home-player-in 3.3s 1;
 }
-.home-player h2 {
+.player h2 {
 	color: white;
-	font-size: 2rem;
+	font-size: 1.5rem;
 	font-family: 'Roboto', sans-serif;
 }
 .lineup-text {
@@ -367,13 +536,17 @@ box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
 	justify-content: space-between;
 	align-items: center;
 }
+.lastten {
+	color: white;
+	font-family: 'Roboto', sans-serif;
+}
 .lineup-text table {
 	margin-right: 3vw;
 }
 .lineup-pic {
 	height: 13vh;
 	width: auto;
-	margin: 0 2vw;
+	margin: 0 1vw;
 }
 .lineup-header {
 	display: flex;
@@ -386,6 +559,23 @@ box-shadow: 17px 16px 20px -5px rgba(0,0,0,0.75);
 	margin-right: 1vw;
 	color: white;
 	font-family: 'Roboto', sans-serif;
+}
+.vspitcher {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 20vw;
+	color: white;
+	font-family: 'Roboto', sans-serif;
+}
+.history {
+	border: 1px solid white;
+	padding: .5rem;
+	height: 3vh;
+	width: 10vw;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 .pos-bo {
 	height: 12vh;

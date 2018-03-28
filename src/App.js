@@ -10,7 +10,7 @@ import parks from './assets/parks.json';
 import Footer from './components/Footer';
 import Options from './components/Options';
 import player_list from './assets/playerObject.json';
-import gameObj from './assets/gameObjFull20170920.json';
+import gameObj from './assets/gameObjFull20170920a.json';
 
 class App extends Component {
   constructor(props){
@@ -88,22 +88,26 @@ class App extends Component {
       homeTeam: home,
       awayTeam: away,
       homeBorder: selectedGame.homeTeam.pitcher.Team.Border,
-      awayBorder: selectedGame.awayTeam.pitcher.Team.Border
+      awayBorder: selectedGame.awayTeam.pitcher.Team.Border,
+      homeColors: this.getTeamColors(home),
+      awayColors: this.getTeamColors(away),
+    }, () => {
+      this.getPark();
     })
   }
 
 
   getTeamColors = (team) => {
-    var name = team.Name;
+    var name = team.name;
     let colors = this.state.colors;
     let color = colors.filter(color => {
       return name === color.name
     })
-    return color
+    return color[0]
   }
   getPark = (team) => {
     let parks = this.state.parks;
-    let homeTeam = this.state.homeTeam.Name;
+    let homeTeam = this.state.homeTeam.name;
     let park = parks[homeTeam];
     var randomBackground = park[Math.floor(Math.random() * park.length)];
     console.log(randomBackground)
@@ -129,25 +133,27 @@ class App extends Component {
       <div className="App">
         <Header />
         <div className='preload-container'>
-        <div className={(this.state.homePitcher) ? 'matchup-container ' : 'matchup-container preload'} style={this.state.backgroundStyle}>
+        <div className={(this.state.selectedGame) ? 'matchup-container ' : 'matchup-container preload'} style={this.state.backgroundStyle}>
         <Games
           setGameData={this.setGameData}
         />
         {(this.state.selectedGame) ? 
-          <div>
+          <div className='lineup-wrapper'>
             <Teams
               gameObj={this.state.selectedGame}
               homeColors={this.state.homeColors}
               awayColors={this.state.awayColors}
             />
             <Pitchers
-             gameObj={this.state.selectedGame}
+              gameObj={this.state.selectedGame}
             />
 
             <Options
-            getYear={this.getYear}
+              getYear={this.getYear}
             />
             <MainLineup
+              homeColors={this.state.homeColors}
+              awayColors={this.state.awayColors}
               selectedYear={this.state.selectedYear}
               gameObj={this.state.selectedGame}
             />
