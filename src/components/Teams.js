@@ -1,12 +1,20 @@
 import React from 'react';
 
 export default function Teams({ gameObj, homeColors, awayColors }) {
-  var awayBorder = gameObj.awayTeam.pitcher.Team.Border;
-  var homeBorder = gameObj.homeTeam.pitcher.Team.Border;
   var homeTeamName = gameObj.homeTeam.city + ' ' + gameObj.homeTeam.name;
   var awayTeamName = gameObj.awayTeam.city + ' ' + gameObj.awayTeam.name;
   var homeLogo = gameObj.homeTeam.pitcher.Team.logo;
   var awayLogo = gameObj.awayTeam.pitcher.Team.logo;
+  var awayBorder = {
+    border: '6px solid ' + awayColors.colors.secondary,
+    backgroundColor: awayColors.colors.primary,
+    borderLeft: 'none',
+  }
+  var homeBorder = {
+    border: '6px solid ' + homeColors.colors.secondary,
+    backgroundColor: homeColors.colors.primary,
+    borderRight: 'none',
+  }
 
   return (
     <div className='team-container'>

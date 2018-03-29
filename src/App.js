@@ -145,6 +145,8 @@ class App extends Component {
               awayColors={this.state.awayColors}
             />
             <Pitchers
+              homeColors={this.state.homeColors}
+              awayColors={this.state.awayColors}
               gameObj={this.state.selectedGame}
             />
 

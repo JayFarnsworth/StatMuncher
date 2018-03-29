@@ -11,8 +11,29 @@ class MainLineup extends Component {
       },
       homeHidden: true,
       awayHidden: false,
-      playerDetailsExpand: false,
-      detailsHover: false
+      playerDetailsExpand: {
+        0: false,
+        1: false,
+        2: false,
+        3: false,
+        4: false,
+        5: false,
+        6: false,
+        7: false,
+        8: false
+      },
+      detailsHover: false,
+      awayHover: {
+        0: false,
+        1: false,
+        2: false,
+        3: false,
+        4: false,
+        5: false,
+        6: false,
+        7: false,
+        8: false
+      }
     }
   }
 
@@ -43,7 +64,7 @@ class MainLineup extends Component {
   }
   toggleDetails = (event) => {
     let expandDetails = this.state.playerDetailsExpand;
-    expandDetails = !expandDetails;
+    expandDetails[event.currentTarget.id] = !expandDetails[event.currentTarget.id];
     this.setState({playerDetailsExpand: expandDetails})
   }
   // fetchBatter = (batter) => {
@@ -98,7 +119,7 @@ class MainLineup extends Component {
 
   getMatchupScore = (stats) => {
     if (stats == 'no data') {
-      return 'No History'
+      return 'N/A'
     } else {
       var AB = Number(stats.AB) * -1;
       var H = Number(stats.H) * 2;
@@ -112,7 +133,11 @@ class MainLineup extends Component {
       var OPSScore = Number(stats.AB) * OPSDifference;
       var matchupScore = AB + H + Double + Triple + HR + RBI + SO + BB
       if (Number(stats.AB > 5)) matchupScore += OPSScore;
-      return matchupScore.toFixed(1);
+      if (matchupScore > 0) {
+        return '+' + matchupScore.toFixed(0)
+      } else {
+        return matchupScore.toFixed(0);
+      }
     }
   }
   getPitcherStats = () => {
@@ -200,13 +225,13 @@ class MainLineup extends Component {
   }
   getHistoryLength = (matchup) => {
     if (Number(matchup.AB) < 6) {
-      return 'Short'
+      return 'SHORT'
     } else if (Number(matchup.AB) >= 6 && Number(matchup.AB) < 20) {
-      return 'Familiar'
+      return 'FAMILIAR'
     } else if (Number(matchup.AB) >= 20) {
-      return 'Long'
+      return 'LONG'
     } else if (Number(matchup.AB) === 0 || matchup.AB === null || matchup.AB === undefined) {
-      return 'First Meeting'
+      return 'N/A'
     }
   }
   getBatterSuccess = (matchup) => {
@@ -244,8 +269,104 @@ class MainLineup extends Component {
     var BB = Number(stats.BB);
     var SO = Number(stats.SO);
     var score = (OPSDifference * AB * 10) + (HR * 4) + (RBI * 3) + BB + (SO * -2);
-    return score.toFixed(0);
+    if (score > 0) {
+      return '+' + score.toFixed(0);
+    } else {
+      return score.toFixed(0);
+    }
   } 
+  detailsHover = (event) => {
+    var playerHover = this.state.detailsHover;
+    playerHover = !playerHover
+    this.setState({detailsHover: playerHover})
+  }
+  awayHover = (event) => {
+    let awayHover = this.state.awayHover;
+    awayHover[event.target.id] = !awayHover[event.target.id];
+    this.setState({ awayHover: awayHover })
+  }
+  getPlayerPosition = (position) => {
+    if (position === 'RF') {
+      return 'Right Field'
+    } else if (position === 'LF') {
+      return 'Left Field'
+    } else if (position === 'CF') {
+      return 'Center Field'
+    } else if (position === 'SS') {
+      return 'Shortstop'
+    } else if (position === '3B') {
+      return 'Third Base'
+    } else if (position === '2B') {
+      return 'Second Base'
+    } else if (position === '1B') {
+      return 'First Base'
+    } else if (position === 'C') {
+      return 'Catcher'
+    } else {
+      return 'Designated Hitter'
+    }
+  }
+  getMatchHotColor = (score) => {
+    if (score > 10) {
+      return 'rgb(0, 102, 0)';
+    } if (score < -10) {
+      return 'rgb(170, 0, 0)';
+    }
+  }
+  toPercent = (number) => {
+    var num = (number * 100).toFixed(0)
+    if (num > 0) {
+      return '↑' + num;
+    } else if (num === 0) {
+      return '0'
+    } else {
+      return '↓' + num;
+    }
+  }
+  getKBBDiffPercent(matchup, overall) {
+    if (Number(matchup.SO) === 0 && Number(matchup.BB === 0)) {
+      return '0'
+    } else if (Number(matchup.BB === 0)) {
+      return '↓' + '100'
+    } else if (Number(matchup.SO) === 0) {
+      return '↑' + '100'
+    } else {
+      var matchupKBB = Number(matchup.BB) / Number(matchup.SO);
+      var overallKBB = Number(overall.BB) / Number(overall.SO);
+      var percentDiff = (((matchupKBB - overallKBB) / overallKBB) * 100).toFixed(0);
+    }
+    if (percentDiff > 0) {
+      return '↑' + percentDiff
+    } else {
+      return '↓' + percentDiff
+    }
+  }
+  getRBIRatePercent = (matchup, overall) => {
+    if (matchup.PA == 0) {
+      return '0'
+    } else {
+      var matchupRBIrt = (Number(matchup.RBI) / Number(matchup.PA));
+      var overallRBIrt = (Number(overall.RBI) / Number(overall.PA));
+      var percent = ((matchupRBIrt - overallRBIrt) / overallRBIrt) * 100;
+      console.log(matchupRBIrt, overallRBIrt, percent)
+      if (percent > 0) {
+        return '↑' + percent.toFixed(0)
+      } else {
+        return '↓' + percent.toFixed(0)
+      }
+    }
+  }
+  getUsage = (ABs) => {
+   if (ABs < 12) {
+     return 'LOW'
+   } else if (ABs < 32) {
+     return 'MED'
+   } else if (ABs < 45) {
+     return 'HIGH'
+   } else if (ABs >= 45) {
+     return 'EXT'
+   }
+  }
 
   render() {
     if (this.props.awayColors) { var awayStyle = {
@@ -282,86 +403,131 @@ class MainLineup extends Component {
           {(true) ? this.props.gameObj.awayTeam.lineup.map((player, i)=>{
             var s = player.stats.stats;
             return (
-          <div className={(this.state.playerDetailsExpand) ? 'player-container' : 'player-container collapsed-space'}>
-                <div className={(this.state.playerDetailsExpand) ? 'popup-top' : 'popup-top collapsed hidden'}>
-                  <div className={(this.state.playerDetailsExpand) ? 'pop-border' : 'pop-border'} style={{backgroundColor: this.props.awayColors.colors.secondary}}></div>
-              <div className={(this.state.playerDetailsExpand) ? 'top-pop' : 'top-pop'}>
+          <div id={i} onClick={this.toggleDetails} className={(this.state.playerDetailsExpand[i]) ? 'player-container' : 'player-container collapsed-space'}>
+                <div className={(this.state.playerDetailsExpand[i]) ? 'popup-top' : 'popup-top collapsed hidden'}>
+                  <div className='pop-border' style={{backgroundColor: this.props.awayColors.colors.secondary}}></div>
+              <div className={(this.state.playerDetailsExpand[i]) ? 'top-pop' : 'top-pop'}>
               {player.logs.gameLogs.map(game=>{
                 return(
-                  <div className={(this.state.playerDetailsExpand) ? 'game-log' : 'game-log'} style={this.getLogColor(game.stats)}>
-                    <div className={(this.state.playerDetailsExpand) ? 'log-date' : 'log-date'}>
+                  <div className='game-log' style={this.getLogColor(game.stats)}>
+                    <div className='log-date' style={{backgroundColor: this.props.awayColors.colors.primary}}>
                       <h3>{(game.date).slice(6).replace("-", '/')}</h3>
                     </div>
                     <div className='game-stats-container'>
                       <h3>{game.stats.H} / {game.stats.AB}</h3>
                       <h3>{(game.stats.HR === 1) ? 'HR' : (game.stats.HR > 1) ? game.stats.HR + ' HR' : null} {(game.stats.RBI === 1) ? 'RBI' : (game.stats.RBI > 1) ? game.stats.RBI + ' RBI' : null}</h3>
-                      <h3>{(game.stats['2B'] === 1) ? '2B' : (game.stats['2B'] > 1) ? game.stats['2B'] + ' 2B' : null} {(game.stats['3B'] === 1) ? ' 3B' : (game.stats.BB === 1) ? ' BB' : (game.stats.BB > 1) ? game.stats.BB + ' BB' : null}</h3>
+                      <h3>{(game.stats['2B'] === 1) ? '2B' : (game.stats['2B'] > 1) ? game.stats['2B'] + ' 2B' : null} {(game.stats['3B'] === 1) ? ' 3B' : (game.stats.BB === 1) ? ' BB' : (game.stats.BB > 1) ? game.stats.BB + ' BB' : (game.stats.SO > 0) ? game.stats.SO + 'K' : null}</h3>
                     </div>
                   </div>
                 )
               })}
               </div>
             </div>
-            <div className='player away' style={awayStyle} onClick={this.toggleDetails} onMouseHover={this.detailsHover}>
-                  <img src={player.info.Image} className='lineup-pic' style={awayImgBorder} />
-                  <div>
-                    <div className='lineup-header'>
-                        <h2>{player.batOrder}) {player.info.LastName}, {player.info.FirstName} {player.position}</h2>
-                    </div>
-                    <div className='player-scores'>
-                        <h3>Matchup: {this.getMatchupScore(player.matchup)}</h3>
-                        <h3>Hotness: {this.getHotnessScore(player.logs.cumTenGame)}</h3>
-                    </div>
-                  </div>
-                <div className='lastten'>
-                  <h3>Last Ten Days:</h3>
-                    <h3>AVG {(Math.round(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA)) * 100) > 0) ? ' ↑ ' : ' ↓ ' }{Math.round(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA)) * 100)}%</h3>
-                    <h3>SLG{(((Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG) / Number(player.stats.stats.SLG) * 100)) > 0) ? ' ↑ ' : ' ↓ '}{(Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG) / Number(player.stats.stats.SLG))}%</h3>
-                </div>
-                <div className='vspitcher'>
-                  <h3>VS {this.props.gameObj.homeTeam.pitcher.LastName}:</h3>
-                  <div className='history'>
-                    <h3>{this.getHistoryLength(player.matchup)} History</h3>
+            <div className='player away' style={awayStyle} onMouseOver={this.detailsHover}>
+              <div id={i} className='away-toggle' onClick={this.toggleAway} onMouseOver={this.awayHover}></div>
+              <div className='batting-order'><h1>{player.batOrder})</h1></div>
+              <div className='img-name'>
+                <img src={player.info.Image} className='lineup-pic' style={awayImgBorder} />
+                <div className='name-matchup'>
+                  <div className='lineup-header'>
+                        <h2>{player.info.LastName}, {player.info.FirstName}</h2>
+                        <h3>#{player.info.JerseyNumber} - {this.getPlayerPosition(player.position)}</h3>
+                        <h3>{player.info.Handedness.Bats}HB - Age {player.info.Info.Age}</h3>
+                      <h3></h3>
                   </div>
                 </div>
               </div>
-              <div className={(this.state.playerDetailsExpand) ? 'below-container' : 'below-contianer bottom-collapsed' }>
-                <div className={(this.state.playerDetailsExpand) ? 'stats-below' : 'stats-below hidden a'}>
+                  <div className='player-scores'>
+                    <h3 style={{color: this.getMatchHotColor(this.getMatchupScore(player.matchup))}}className='match-hot'>{this.getMatchupScore(player.matchup)}</h3>
+                    <h3>MATCH</h3>
+                    <h3>HOT</h3>
+                    <h3 style={{color: this.getMatchHotColor(this.getHotnessScore(player.logs.cumTenGame))}}className='match-hot'>{this.getHotnessScore(player.logs.cumTenGame)}</h3>
+                  </div>
+                <div className='matchup-cum-box'>
+                <div className='lastten'>
+                  <h3 className='matchup-heading'>L10D:</h3>
+                    <h3>{this.getUsage(player.logs.cumTenGame.AB)}</h3>
+
+                    <h3>{this.toPercent(Math.round(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))))}%</h3>
+
+                    <h3>{this.toPercent((Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
+
+                    <h3>{this.getKBBDiffPercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
+                    <h3>{this.getRBIRatePercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
+                </div>
+                <div className='categories'>
+                    <h3>.</h3>
+                    <h3>USAGE/HISTORY</h3>
+                    <h3>CONTACT</h3>
+                    <h3>POWER</h3>
+                    <h3>DISCIPLINE</h3>
+                    <h3>RUNS</h3>
+                </div>
+                <div className='vspitcher'>
+                  <h3 className='matchup-heading'>vs {(this.props.gameObj.homeTeam.pitcher.LastName).toUpperCase()}:</h3>
+                  <h3>{this.getHistoryLength(player.matchup)}</h3>
+
+
+                  <h3>{this.toPercent((Number(player.matchup.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))}%</h3>
+
+
+                  <h3>{this.toPercent((Number(player.matchup.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
+
+
+                  <h3>{this.getKBBDiffPercent(player.matchup, player.stats.stats)}%</h3>
+                  <h3>{this.getRBIRatePercent(player.matchup, player.stats.stats)}%</h3>
+                </div>
+                </div>
+              </div>
+              <div className={(this.state.playerDetailsExpand[i]) ? 'below-container' : 'below-contianer bottom-collapsed' }>
+                <div className={(this.state.playerDetailsExpand[i]) ? 'stats-below' : 'stats-below hidden a'}>
                    <table className='delay'>
                       <tr>
                         <th></th>
                         <th>AB</th>
                         <th>AVG</th>
                         <th>RBI</th>
-                        <th>HR</th>
                         <th>BB%</th>
                         <th>SO%</th>
                         <th>OPS</th>
+                        <th>SLG</th>
+                        <th>2B</th>
+                        <th>3B</th>
+                        <th>HR</th>
+                        <th>XBH%</th>
                       </tr>
                       <tr>
                         <td>2017</td>
                         <td>{player.stats.stats.AB}</td>
                         <td>{s.BA}</td>
                         <td>{player.stats.stats.RBI}</td>
-                        <td>{player.stats.stats.HR}</td>
                         <td>{((player.stats.stats.BB / player.stats.stats.PA) * 100).toFixed(0)}%</td>
                         <td>{((player.stats.stats.SO / player.stats.stats.PA) * 100).toFixed(0)}%</td>
                         <td>{player.stats.stats.OPS}</td>
+                        <td>{player.stats.stats.SLG}</td>
+                        <td>{player.stats.stats['2B']}</td>
+                        <td>{player.stats.stats['3B']}</td>
+                        <td>{player.stats.stats.HR}</td>
+                        <td>XBH%</td>
                       </tr>
                       <tr>
                         <td>vs {this.props.gameObj.homeTeam.pitcher.LastName}</td>
                         <td>{player.matchup.AB}</td>
                         <td style={this.getBAColor(player.matchup, homePitcherStats)}>{player.matchup.BA}</td>
                         <td style={this.getRBIColor(player.matchup, homePitcherStats)}>{player.matchup.RBI}</td>
-                        <td>{player.matchup.HR}</td>
                         <td>{((player.matchup.BB / player.matchup.PA) * 100).toFixed(0)}%</td>
                         <td>{((player.matchup.SO / player.matchup.PA) * 100).toFixed(0)}%</td>
                         <td style={this.getOPSColor(player.matchup, homePitcherStats)}>{player.matchup.OPS}</td>
+                        <td>{player.matchup.SLG}</td>
+                        <td>{player.matchup['2B']}</td>
+                        <td>{player.matchup['3B']}</td>
+                        <td>{player.matchup.HR}</td>
+                        <td>XBH%</td>
                       </tr>
                     </table>
 
                 </div>
-                  <div className='pop-border' style={{ backgroundColor: this.props.awayColors.colors.secondary }}>
+                  <div className='pop-border border-bottom' style={{ backgroundColor: this.props.awayColors.colors.secondary }}>
                 </div>
               </div>
             </div>)
