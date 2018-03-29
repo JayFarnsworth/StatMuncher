@@ -17,7 +17,7 @@ class Pitchers extends Component {
       players: player_list
     })
   }
-  showPitcherGames = (event) => {
+  showAwayPitcherGames = (event) => {
     let show = this.state.showHomePitcher;
     this.setState({showHomePitcher: !show})
     this.setLogs();
@@ -155,6 +155,18 @@ class Pitchers extends Component {
     awayExpand = !awayExpand;
     this.setState({ awayExpand: awayExpand })
   }
+  getMatchHotColor = (score) => {
+    if (score > 30) {
+      return {color: 'rgb(0, 102, 0)'};
+    } if (score < -30) {
+      return {color: 'rgb(170, 0, 0)'};
+    }
+  }
+  addPlusSign = (score) => {
+    if (score > 0) {
+      return '+' + score;
+    }
+  }
 
   render(props) {
     var gameObj = this.props.gameObj;
@@ -174,7 +186,7 @@ class Pitchers extends Component {
       var IP = Number(stats.IP);
       IP = Math.floor(IP) * 2;
       var ER = Number(stats.ER) * -4;
-      var hotnessScore = OPSDifference + wins + losses + IP + ER;
+      var hotnessScore = ((OPSDifference + wins + losses + IP + ER) / 2);
       return hotnessScore;
     }
     var homeHotness = calculatePitcherHotness(home10Cum);
@@ -210,65 +222,97 @@ class Pitchers extends Component {
               <img src={awayPitcher.Image} className='pitcher-pic' alt='' style={awayImgBorder}/>
               <div className='pitcher-text'>
                 <h2 className='pitcher-name'>{awayPitcher.LastName}, {awayPitcher.FirstName}</h2>
-                <div className='pitcher-stat-main'>
-                  <table>
-                    <tr>
-                      <th>W-L</th>
-                      <th>IP</th>
-                      <th>ERA</th>
-                      <th>WHIP</th>
-                      <th>OPS</th>
-                    </tr>
-                    <tbody>
-                      <tr>
-                        <td>{awayPitcher.Stats.W} - {awayPitcher.Stats.L}</td>
-                        <td>{awayPitcher.Stats.IP}</td>
-                        <td>{awayPitcher.Stats.ERA}</td>
-                        <td>{awayPitcher.Stats.WHIP}</td>
-                        <td>{awayPitcher.Stats.OPS}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div className='analysis-scores'>
-                  <h2>Matchup: +40</h2>
-                  <h2>Hotness: {Math.ceil(awayHotness)}</h2>
-                </div>
+                <h2>{awayPitcher.Handedness.Throws}H Starting Pitcher</h2>
+                <h2>#{awayPitcher.JerseyNumber} - Age {awayPitcher.Info.Age}</h2>
+                <h2>{awayPitcher.Stats.W}-{awayPitcher.Stats.L} : {awayPitcher.Stats.ERA} ERA</h2>
+              </div>
+              <div className='player-scores pitcher-scores'>
+                <h3 style={this.getMatchHotColor(this.props.awayCum)} className='match-hot'>{(this.props.awayCum > 0) ? '+' : null}{this.props.awayCum}</h3>
+                <h3>MATCH</h3>
+                <h3>HOT</h3>
+                <h3 style={this.getMatchHotColor(awayHotness)} className='match-hot'>{(awayHotness > 0) ? '+' : null}{awayHotness.toFixed(0)}</h3>
               </div>
             </div>
-            <div className='pitcher-stat-dropdown'>
+            <div className={(this.state.awayExpand) ? 'pitcher-stat-dropdown' : 'pitcher-stat-dropdown pitcher-stat-collapsed collapsed-hover'}>
+              <div className='pitcher-dropdown-main'>
+                <table>
+                  <tr>
+                    <th></th>
+                    <th>W-L</th>
+                    <th>IP</th>
+                    <th>ERA</th>
+                    <th>WHIP</th>
+                    <th>OPS</th>
+                  </tr>
+                  <tbody>
+                    <tr>
+                      <td>2017</td>
+                      <td>{awayPitcher.Stats.W} - {awayPitcher.Stats.L}</td>
+                      <td>{awayPitcher.Stats.IP}</td>
+                      <td>{awayPitcher.Stats.ERA}</td>
+                      <td>{awayPitcher.Stats.WHIP}</td>
+                      <td>{awayPitcher.Stats.OPS}</td>
+                    </tr>
+                    <tr>
+                      <td>vs Today's Lineup</td>
+                      <td>{awayPitcher.Stats.W} - {awayPitcher.Stats.L}</td>
+                      <td>{awayPitcher.Stats.IP}</td>
+                      <td>{awayPitcher.Stats.ERA}</td>
+                      <td>{awayPitcher.Stats.WHIP}</td>
+                      <td>{awayPitcher.Stats.OPS}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className='pitcher-logs-border' style={{ backgroundColor: this.props.awayColors.colors.secondary }}></div>
             </div>
             </div>
             <h1 id='vs'>vs</h1>
+            
+          <div className={(this.state.homeExpand) ? 'pitcher-container right' : 'pitcher-container right pitcher-margins'}>
             <div className='full-pitcher-cont right' onClick={this.homeExpand}>
-            <div className={(this.state.homeExpand) ? 'logs-cont' : 'logs-cont collapsed logs-hover'}>
-              <div className='pitcher-logs-border right' style={{ backgroundColor: this.props.homeColors.colors.secondary }}></div>
-              <div className='pitcher-logs'>
-              {homePitcher.logs[0].gameLogs.map((game, i) => {
-                if (i < 5) {
-                  return (
-                    <div className='game-log' style={this.getGameColor(game.stats)}>
-                      <div className='log-date' style={{backgroundColor: this.props.homeColors.colors.primary}}>
-                        <h3>{game.date.slice(6).replace("-", '/')} vs {game.teamFaced}</h3>
-                      </div>
-                      <div className='game-stats-container'>
-                        <h3>{(game.stats.W == 1) ? 'W' : (game.stats.L == 1) ? 'L' : 'ND'} {game.stats.IP} IP</h3>
-                        <h3>{game.stats.ER} ER</h3>
-                        <h3>{game.stats.H}H {game.stats.BB}BB</h3>
-                      </div>
-                    </div>
-                  )
-                }
-              })}
+              <div className={(this.state.homeExpand) ? 'logs-cont' : 'logs-cont collapsed logs-hover'}>
+                <div className='pitcher-logs-border' style={{ backgroundColor: this.props.homeColors.colors.secondary }}></div>
+                <div className='pitcher-logs'>
+                  {homePitcher.logs[0].gameLogs.map((game, i) => {
+                    if (i < 5) {
+                      return (
+                        <div className='game-log' style={this.getGameColor(game.stats)}>
+                          <div className='log-date' style={{ backgroundColor: this.props.homeColors.colors.primary }}>
+                            <h3>{game.date.slice(6).replace("-", '/')} vs {game.teamFaced}</h3>
+                          </div>
+                          <div className='game-stats-container'>
+                            <h3>{(game.stats.W == 1) ? 'W' : (game.stats.L == 1) ? 'L' : 'ND'} {game.stats.IP} IP</h3>
+                            <h3>{game.stats.ER} ER</h3>
+                            <h3>{game.stats.H}H {game.stats.BB}BB</h3>
+                          </div>
+                        </div>
+                      )
+                    }
+                  })}
+                </div>
               </div>
-            </div>
-            <div className='pitcher-card right' onClick={this.showPitcherGames} style={homePitcher.Team.Border}>
-              <img src={homePitcher.Image} className='pitcher-pic' alt='' style={homeImgBorder} />
-              <div className='pitcher-text'>
-                <h2 className='pitcher-name'>{homePitcher.LastName}, {homePitcher.FirstName}</h2>
-                <div className='pitcher-stat-main'>
+              <div className='pitcher-card right' style={homePitcher.Team.Border}>
+
+                <img src={homePitcher.Image} className='pitcher-pic' alt='' style={homeImgBorder} />
+                <div className='pitcher-text'>
+                  <h2 className='pitcher-name'>{homePitcher.LastName}, {homePitcher.FirstName}</h2>
+                  <h2>{homePitcher.Handedness.Throws}H Starting Pitcher</h2>
+                  <h2>#{homePitcher.JerseyNumber} - Age {homePitcher.Info.Age}</h2>
+                  <h2>{homePitcher.Stats.W}-{homePitcher.Stats.L} : {homePitcher.Stats.ERA} ERA</h2>
+                </div>
+                <div className='player-scores pitcher-scores'>
+                  <h3 style={this.getMatchHotColor(this.props.homeCum)} className='match-hot'>{this.props.homeCum}</h3>
+                  <h3>MATCH</h3>
+                  <h3>HOT</h3>
+                  <h3 style={this.getMatchHotColor(homeHotness)} className='match-hot'>{homeHotness.toFixed(0)}</h3>
+                </div>
+              </div>
+              <div className={(this.state.homeExpand) ? 'pitcher-stat-dropdown' : 'pitcher-stat-dropdown pitcher-stat-collapsed collapsed-hover'}>
+                <div className='pitcher-dropdown-main'>
                   <table>
                     <tr>
+                      <th></th>
                       <th>W-L</th>
                       <th>IP</th>
                       <th>ERA</th>
@@ -277,6 +321,15 @@ class Pitchers extends Component {
                     </tr>
                     <tbody>
                       <tr>
+                        <td>2017</td>
+                        <td>{homePitcher.Stats.W} - {homePitcher.Stats.L}</td>
+                        <td>{homePitcher.Stats.IP}</td>
+                        <td>{homePitcher.Stats.ERA}</td>
+                        <td>{homePitcher.Stats.WHIP}</td>
+                        <td>{homePitcher.Stats.OPS}</td>
+                      </tr>
+                      <tr>
+                        <td>vs Today's Lineup</td>
                         <td>{homePitcher.Stats.W} - {homePitcher.Stats.L}</td>
                         <td>{homePitcher.Stats.IP}</td>
                         <td>{homePitcher.Stats.ERA}</td>
@@ -286,10 +339,7 @@ class Pitchers extends Component {
                     </tbody>
                   </table>
                 </div>
-                <div className='analysis-scores'>
-                  <h2>Matchup: +40</h2>
-                  <h2>Hotness: {Math.ceil(homeHotness)}</h2>
-                </div>
+                <div className='pitcher-logs-border' style={{ backgroundColor: this.props.homeColors.colors.secondary }}></div>
               </div>
             </div>
         </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import GameInfo from './GameInfo.js'
 
 export default function Teams({ gameObj, homeColors, awayColors }) {
   var homeTeamName = gameObj.homeTeam.city + ' ' + gameObj.homeTeam.name;

@@ -40,6 +40,13 @@ class MainLineup extends Component {
   componentDidMount(){
     if (this.props.gameObj) {
       this.getPitcherStats(this.props.gameObj);
+      var homeCumMatch = this.getCumMatchup(this.props.gameObj.homeTeam.lineup);
+      var awayCumMatch = this.getCumMatchup(this.props.gameObj.awayTeam.lineup);
+      this.sendCumMatch(homeCumMatch, awayCumMatch)
+      this.setState({
+        homeCumMatch: homeCumMatch,
+        awayCumMatch: awayCumMatch
+      })
     }
   }
   toggleHome = (event) => {
@@ -275,11 +282,6 @@ class MainLineup extends Component {
       return score.toFixed(0);
     }
   } 
-  detailsHover = (event) => {
-    var playerHover = this.state.detailsHover;
-    playerHover = !playerHover
-    this.setState({detailsHover: playerHover})
-  }
   awayHover = (event) => {
     let awayHover = this.state.awayHover;
     awayHover[event.target.id] = !awayHover[event.target.id];
@@ -348,7 +350,6 @@ class MainLineup extends Component {
       var matchupRBIrt = (Number(matchup.RBI) / Number(matchup.PA));
       var overallRBIrt = (Number(overall.RBI) / Number(overall.PA));
       var percent = ((matchupRBIrt - overallRBIrt) / overallRBIrt) * 100;
-      console.log(matchupRBIrt, overallRBIrt, percent)
       if (percent > 0) {
         return '↑' + percent.toFixed(0)
       } else {
@@ -356,6 +357,12 @@ class MainLineup extends Component {
       }
     }
   }
+  getXBHPercent = (stats) => {
+    var XBH = Number(stats['2B']) + Number(stats['3B']) + Number(stats.HR);
+    var ratio = XBH / Number(stats.H)
+    var percent = (ratio * 100).toFixed(0)
+    return percent
+  } 
   getUsage = (ABs) => {
    if (ABs < 12) {
      return 'LOW'
@@ -367,6 +374,57 @@ class MainLineup extends Component {
      return 'EXT'
    }
   }
+  getCumMatchup = (lineup) => {
+    var cumScore = 0;
+    for (let player of lineup) {
+      if (!player.matchup.PA == 0) {
+        var score = this.getMatchupScore(player.matchup)
+        cumScore += Number(score);
+      }
+    }
+    return cumScore;
+  }
+  sendCumMatch = (homeCum, awayCum) => {
+    this.props.getCumMatch(homeCum, awayCum);
+  }
+  getStatColorComparison = (stat, compStat) => {
+    var green = {
+      color: '#c2ffc1'
+    }
+    var red = {
+      color: '#ffc6cc'
+    }
+    if (Number(stat) > Number(compStat)) {
+      return green
+    } else if (Number(stat) < Number(compStat)) {
+      return red
+    } else {
+
+    }
+  }
+  getColor = (percent) => {
+    var green = {
+      color: '#c2ffc1'
+    }
+    var red = {
+      color: '#ffc6cc'
+    }
+    var sliced = percent.slice(1);
+    if (Number(sliced) > 10) {
+      return green;
+    } else if (Number(sliced) < -10) {
+      return red;
+    } 
+  }
+//           <div className={(this.state.homeHidden) ? 'home-container home-hidden' : 'home-container'} onClick={this.toggleHome}>
+//   {this.props.gameObj.homeTeam.lineup.map(player => {
+//     return (
+//       <div className='player home' style={homeStyle}>
+
+//       </div>
+//     )
+//   })}
+// </div>
 
   render() {
     if (this.props.awayColors) { var awayStyle = {
@@ -407,6 +465,7 @@ class MainLineup extends Component {
                 <div className={(this.state.playerDetailsExpand[i]) ? 'popup-top' : 'popup-top collapsed hidden'}>
                   <div className='pop-border' style={{backgroundColor: this.props.awayColors.colors.secondary}}></div>
               <div className={(this.state.playerDetailsExpand[i]) ? 'top-pop' : 'top-pop'}>
+                <h3 className='game-logs-title'>L10 DAYS</h3>
               {player.logs.gameLogs.map(game=>{
                 return(
                   <div className='game-log' style={this.getLogColor(game.stats)}>
@@ -414,7 +473,7 @@ class MainLineup extends Component {
                       <h3>{(game.date).slice(6).replace("-", '/')}</h3>
                     </div>
                     <div className='game-stats-container'>
-                      <h3>{game.stats.H} / {game.stats.AB}</h3>
+                      <h3 className=''>{game.stats.H} / {game.stats.AB}</h3>
                       <h3>{(game.stats.HR === 1) ? 'HR' : (game.stats.HR > 1) ? game.stats.HR + ' HR' : null} {(game.stats.RBI === 1) ? 'RBI' : (game.stats.RBI > 1) ? game.stats.RBI + ' RBI' : null}</h3>
                       <h3>{(game.stats['2B'] === 1) ? '2B' : (game.stats['2B'] > 1) ? game.stats['2B'] + ' 2B' : null} {(game.stats['3B'] === 1) ? ' 3B' : (game.stats.BB === 1) ? ' BB' : (game.stats.BB > 1) ? game.stats.BB + ' BB' : (game.stats.SO > 0) ? game.stats.SO + 'K' : null}</h3>
                     </div>
@@ -425,12 +484,18 @@ class MainLineup extends Component {
             </div>
             <div className='player away' style={awayStyle} onMouseOver={this.detailsHover}>
               <div id={i} className='away-toggle' onClick={this.toggleAway} onMouseOver={this.awayHover}></div>
-              <div className='batting-order'><h1>{player.batOrder})</h1></div>
+              <div className='batting-order'>
+                <div className='outer-number-pos'>
+                  <h1>{(player.position.includes('BO')) ? 'DH' : player.position}</h1>
+                  <h1>#{player.info.JerseyNumber}</h1>
+                </div>
+                <h1>{player.batOrder})</h1>
+              </div>
               <div className='img-name'>
                 <img src={player.info.Image} className='lineup-pic' style={awayImgBorder} />
                 <div className='name-matchup'>
                   <div className='lineup-header'>
-                        <h2>{player.info.LastName}, {player.info.FirstName}</h2>
+                        <h2>{player.batOrder}) {player.info.LastName}, {player.info.FirstName}</h2>
                         <h3>#{player.info.JerseyNumber} - {this.getPlayerPosition(player.position)}</h3>
                         <h3>{player.info.Handedness.Bats}HB - Age {player.info.Info.Age}</h3>
                       <h3></h3>
@@ -448,12 +513,12 @@ class MainLineup extends Component {
                   <h3 className='matchup-heading'>L10D:</h3>
                     <h3>{this.getUsage(player.logs.cumTenGame.AB)}</h3>
 
-                    <h3>{this.toPercent(Math.round(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))))}%</h3>
+                      <h3 style={this.getColor(this.toPercent(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))))}>{this.toPercent(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA)))}%</h3>
 
-                    <h3>{this.toPercent((Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
+                      <h3 style={this.getColor(this.toPercent((Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG)))}>{this.toPercent((Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
 
-                    <h3>{this.getKBBDiffPercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
-                    <h3>{this.getRBIRatePercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
+                      <h3 style={this.getColor(this.getKBBDiffPercent(player.logs.cumTenGame, player.stats.stats))}>{this.getKBBDiffPercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
+                      <h3 style={this.getColor(this.getRBIRatePercent(player.logs.cumTenGame, player.stats.stats))}>{this.getRBIRatePercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
                 </div>
                 <div className='categories'>
                     <h3>.</h3>
@@ -468,14 +533,14 @@ class MainLineup extends Component {
                   <h3>{this.getHistoryLength(player.matchup)}</h3>
 
 
-                  <h3>{this.toPercent((Number(player.matchup.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))}%</h3>
+                      <h3 style={this.getColor(this.toPercent((Number(player.matchup.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA)))}>{this.toPercent((Number(player.matchup.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))}%</h3>
 
 
-                  <h3>{this.toPercent((Number(player.matchup.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
+                      <h3 style={this.getColor(this.toPercent((Number(player.matchup.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG)))}>{this.toPercent((Number(player.matchup.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
 
 
-                  <h3>{this.getKBBDiffPercent(player.matchup, player.stats.stats)}%</h3>
-                  <h3>{this.getRBIRatePercent(player.matchup, player.stats.stats)}%</h3>
+                      <h3 style={this.getColor(this.getKBBDiffPercent(player.matchup, player.stats.stats))}>{this.getKBBDiffPercent(player.matchup, player.stats.stats)}%</h3>
+                      <h3 style={this.getColor(this.getRBIRatePercent(player.matchup, player.stats.stats))}>{this.getRBIRatePercent(player.matchup, player.stats.stats)}%</h3>
                 </div>
                 </div>
               </div>
@@ -508,7 +573,7 @@ class MainLineup extends Component {
                         <td>{player.stats.stats['2B']}</td>
                         <td>{player.stats.stats['3B']}</td>
                         <td>{player.stats.stats.HR}</td>
-                        <td>XBH%</td>
+                        <td>{this.getXBHPercent(player.stats.stats)}%</td>
                       </tr>
                       <tr>
                         <td>vs {this.props.gameObj.homeTeam.pitcher.LastName}</td>
@@ -518,11 +583,25 @@ class MainLineup extends Component {
                         <td>{((player.matchup.BB / player.matchup.PA) * 100).toFixed(0)}%</td>
                         <td>{((player.matchup.SO / player.matchup.PA) * 100).toFixed(0)}%</td>
                         <td style={this.getOPSColor(player.matchup, homePitcherStats)}>{player.matchup.OPS}</td>
-                        <td>{player.matchup.SLG}</td>
+                        <td style={this.getStatColorComparison(player.matchup.SLG, homePitcherStats.SLG)}>{player.matchup.SLG}</td>
                         <td>{player.matchup['2B']}</td>
                         <td>{player.matchup['3B']}</td>
                         <td>{player.matchup.HR}</td>
-                        <td>XBH%</td>
+                        <td style={this.getStatColorComparison(this.getXBHPercent(player.matchup), this.getXBHPercent(homePitcherStats))}>{this.getXBHPercent(player.matchup)}%</td>
+                      </tr>
+                      <tr>
+                        <td>L10 Days</td>
+                        <td>{player.logs.cumTenGame.AB}</td>
+                        <td style={this.getStatColorComparison(player.logs.cumTenGame.BA, player.stats.stats.BA)}>{player.logs.cumTenGame.BA}</td>
+                        <td style={this.getRBIColor(player.logs.cumTenGame.RBI, player.stats.stats.RBI)}>{player.logs.cumTenGame.RBI}</td>
+                        <td>{((player.logs.cumTenGame.BB / player.logs.cumTenGame.PA) * 100).toFixed(0)}%</td>
+                        <td>{((player.logs.cumTenGame.SO / player.logs.cumTenGame.PA) * 100).toFixed(0)}%</td>
+                        <td style={this.getOPSColor(player.logs.cumTenGame, player.stats.stats)}>{player.logs.cumTenGame.OPS}</td>
+                        <td style={this.getStatColorComparison(player.logs.cumTenGame.SLG, player.stats.stats.SLG)}>{player.logs.cumTenGame.SLG}</td>
+                        <td>{player.logs.cumTenGame['2B']}</td>
+                        <td>{player.logs.cumTenGame['3B']}</td>
+                        <td>{player.logs.cumTenGame.HR}</td>
+                        <td style={this.getStatColorComparison(this.getXBHPercent(player.logs.cumTenGame), this.getXBHPercent(player.stats.stats))}>{this.getXBHPercent(player.logs.cumTenGame)}%</td>
                       </tr>
                     </table>
 
@@ -533,14 +612,160 @@ class MainLineup extends Component {
             </div>)
           }) : ''}
         </div>
-        <div className={(this.state.homeHidden) ? 'home-container home-hidden' : 'home-container'} onClick={this.toggleHome}>
-          {this.props.gameObj.homeTeam.lineup.map(player=>{
+        <div className={(this.state.homeHidden) ? 'home-container' : 'home-container home-hidden'} >
+          {(true) ? this.props.gameObj.homeTeam.lineup.map((player, i) => {
+            var s = player.stats.stats;
             return (
-              <div className='player home' style={homeStyle}>
-                
-              </div>
-            )
-          })}
+              <div id={i} onClick={this.toggleDetails} className={(this.state.playerDetailsExpand[i]) ? 'player-container' : 'player-container collapsed-space'}>
+                <div id={i} className='home-toggle' onClick={this.togglehome}></div>
+                <div className={(this.state.playerDetailsExpand[i]) ? 'popup-top popup-home' : 'popup-top popup-home collapsed hidden'}>
+                  <div className='pop-border' style={{ backgroundColor: this.props.homeColors.colors.secondary }}></div>
+                  <div className={(this.state.playerDetailsExpand[i]) ? 'top-pop' : 'top-pop'}>
+                    <h3 className='game-logs-title'>L10 DAYS</h3>
+                    {player.logs.gameLogs.map(game => {
+                      return (
+                        <div className='game-log' style={this.getLogColor(game.stats)}>
+                          <div className='log-date' style={{ backgroundColor: this.props.homeColors.colors.primary }}>
+                            <h3>{(game.date).slice(6).replace("-", '/')}</h3>
+                          </div>
+                          <div className='game-stats-container'>
+                            <h3 className=''>{game.stats.H} / {game.stats.AB}</h3>
+                            <h3>{(game.stats.HR === 1) ? 'HR' : (game.stats.HR > 1) ? game.stats.HR + ' HR' : null} {(game.stats.RBI === 1) ? 'RBI' : (game.stats.RBI > 1) ? game.stats.RBI + ' RBI' : null}</h3>
+                            <h3>{(game.stats['2B'] === 1) ? '2B' : (game.stats['2B'] > 1) ? game.stats['2B'] + ' 2B' : null} {(game.stats['3B'] === 1) ? ' 3B' : (game.stats.BB === 1) ? ' BB' : (game.stats.BB > 1) ? game.stats.BB + ' BB' : (game.stats.SO > 0) ? game.stats.SO + 'K' : null}</h3>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className='player home' style={homeStyle} onMouseOver={this.detailsHover}>
+                  <div className='batting-order order-home'>
+                    <h1>{player.batOrder})</h1>
+                    <div className='outer-number-pos'>
+                      <h1>{(player.position.includes('BO')) ? 'DH' : player.position}</h1>
+                      <h1>#{player.info.JerseyNumber}</h1>
+                    </div>
+                  </div>
+                  <div className='img-name'>
+                    <img src={player.info.Image} className='lineup-pic' style={homeImgBorder} />
+                    <div className='name-matchup'>
+                      <div className='lineup-header'>
+                        <h2>{player.batOrder}) {player.info.LastName}, {player.info.FirstName}</h2>
+                        <h3>#{player.info.JerseyNumber} - {this.getPlayerPosition(player.position)}</h3>
+                        <h3>{player.info.Handedness.Bats}HB - Age {player.info.Info.Age}</h3>
+                        <h3></h3>
+                      </div>
+                    </div>
+                  </div>
+                  <div className='player-scores'>
+                    <h3 style={{ color: this.getMatchHotColor(this.getMatchupScore(player.matchup)) }} className='match-hot'>{this.getMatchupScore(player.matchup)}</h3>
+                    <h3>MATCH</h3>
+                    <h3>HOT</h3>
+                    <h3 style={{ color: this.getMatchHotColor(this.getHotnessScore(player.logs.cumTenGame)) }} className='match-hot'>{this.getHotnessScore(player.logs.cumTenGame)}</h3>
+                  </div>
+                  <div className='matchup-cum-box'>
+                    <div className='lastten'>
+                      <h3 className='matchup-heading'>L10D:</h3>
+                      <h3>{this.getUsage(player.logs.cumTenGame.AB)}</h3>
+
+                      <h3 style={this.getColor(this.toPercent(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))))}>{this.toPercent(((Number(player.logs.cumTenGame.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA)))}%</h3>
+
+                      <h3 style={this.getColor(this.toPercent((Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG)))}>{this.toPercent((Number(player.logs.cumTenGame.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
+
+                      <h3 style={this.getColor(this.getKBBDiffPercent(player.logs.cumTenGame, player.stats.stats))}>{this.getKBBDiffPercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
+                      <h3 style={this.getColor(this.getRBIRatePercent(player.logs.cumTenGame, player.stats.stats))}>{this.getRBIRatePercent(player.logs.cumTenGame, player.stats.stats)}%</h3>
+                    </div>
+                    <div className='categories'>
+                      <h3>.</h3>
+                      <h3>USAGE/HISTORY</h3>
+                      <h3>CONTACT</h3>
+                      <h3>POWER</h3>
+                      <h3>DISCIPLINE</h3>
+                      <h3>RUNS</h3>
+                    </div>
+                    <div className='vspitcher'>
+                      <h3 className='matchup-heading'>vs {(this.props.gameObj.homeTeam.pitcher.LastName).toUpperCase()}:</h3>
+                      <h3>{this.getHistoryLength(player.matchup)}</h3>
+
+
+                      <h3 style={this.getColor(this.toPercent((Number(player.matchup.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA)))}>{this.toPercent((Number(player.matchup.BA) - Number(player.stats.stats.BA)) / Number(player.stats.stats.BA))}%</h3>
+
+
+                      <h3 style={this.getColor(this.toPercent((Number(player.matchup.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG)))}>{this.toPercent((Number(player.matchup.SLG) - Number(player.stats.stats.SLG)) / Number(player.stats.stats.SLG))}%</h3>
+
+
+                      <h3 style={this.getColor(this.getKBBDiffPercent(player.matchup, player.stats.stats))}>{this.getKBBDiffPercent(player.matchup, player.stats.stats)}%</h3>
+                      <h3 style={this.getColor(this.getRBIRatePercent(player.matchup, player.stats.stats))}>{this.getRBIRatePercent(player.matchup, player.stats.stats)}%</h3>
+                    </div>
+                  </div>
+                </div>
+                <div className={(this.state.playerDetailsExpand[i]) ? 'below-container popup-home' : 'below-contianer bottom-collapsed popup-home'}>
+                  <div className={(this.state.playerDetailsExpand[i]) ? 'stats-below' : 'stats-below hidden a'}>
+                    <table className='delay'>
+                      <tr>
+                        <th></th>
+                        <th>AB</th>
+                        <th>AVG</th>
+                        <th>RBI</th>
+                        <th>BB%</th>
+                        <th>SO%</th>
+                        <th>OPS</th>
+                        <th>SLG</th>
+                        <th>2B</th>
+                        <th>3B</th>
+                        <th>HR</th>
+                        <th>XBH%</th>
+                      </tr>
+                      <tr>
+                        <td>2017</td>
+                        <td>{player.stats.stats.AB}</td>
+                        <td>{s.BA}</td>
+                        <td>{player.stats.stats.RBI}</td>
+                        <td>{((player.stats.stats.BB / player.stats.stats.PA) * 100).toFixed(0)}%</td>
+                        <td>{((player.stats.stats.SO / player.stats.stats.PA) * 100).toFixed(0)}%</td>
+                        <td>{player.stats.stats.OPS}</td>
+                        <td>{player.stats.stats.SLG}</td>
+                        <td>{player.stats.stats['2B']}</td>
+                        <td>{player.stats.stats['3B']}</td>
+                        <td>{player.stats.stats.HR}</td>
+                        <td>{this.getXBHPercent(player.stats.stats)}%</td>
+                      </tr>
+                      <tr>
+                        <td>vs {this.props.gameObj.homeTeam.pitcher.LastName}</td>
+                        <td>{player.matchup.AB}</td>
+                        <td style={this.getBAColor(player.matchup, homePitcherStats)}>{player.matchup.BA}</td>
+                        <td style={this.getRBIColor(player.matchup, homePitcherStats)}>{player.matchup.RBI}</td>
+                        <td>{((player.matchup.BB / player.matchup.PA) * 100).toFixed(0)}%</td>
+                        <td>{((player.matchup.SO / player.matchup.PA) * 100).toFixed(0)}%</td>
+                        <td style={this.getOPSColor(player.matchup, homePitcherStats)}>{player.matchup.OPS}</td>
+                        <td style={this.getStatColorComparison(player.matchup.SLG, homePitcherStats.SLG)}>{player.matchup.SLG}</td>
+                        <td>{player.matchup['2B']}</td>
+                        <td>{player.matchup['3B']}</td>
+                        <td>{player.matchup.HR}</td>
+                        <td style={this.getStatColorComparison(this.getXBHPercent(player.matchup), this.getXBHPercent(homePitcherStats))}>{this.getXBHPercent(player.matchup)}%</td>
+                      </tr>
+                      <tr>
+                        <td>L10 Days</td>
+                        <td>{player.logs.cumTenGame.AB}</td>
+                        <td style={this.getStatColorComparison(player.logs.cumTenGame.BA, player.stats.stats.BA)}>{player.logs.cumTenGame.BA}</td>
+                        <td style={this.getRBIColor(player.logs.cumTenGame.RBI, player.stats.stats.RBI)}>{player.logs.cumTenGame.RBI}</td>
+                        <td>{((player.logs.cumTenGame.BB / player.logs.cumTenGame.PA) * 100).toFixed(0)}%</td>
+                        <td>{((player.logs.cumTenGame.SO / player.logs.cumTenGame.PA) * 100).toFixed(0)}%</td>
+                        <td style={this.getOPSColor(player.logs.cumTenGame, player.stats.stats)}>{player.logs.cumTenGame.OPS}</td>
+                        <td style={this.getStatColorComparison(player.logs.cumTenGame.SLG, player.stats.stats.SLG)}>{player.logs.cumTenGame.SLG}</td>
+                        <td>{player.logs.cumTenGame['2B']}</td>
+                        <td>{player.logs.cumTenGame['3B']}</td>
+                        <td>{player.logs.cumTenGame.HR}</td>
+                        <td style={this.getStatColorComparison(this.getXBHPercent(player.logs.cumTenGame), this.getXBHPercent(player.stats.stats))}>{this.getXBHPercent(player.logs.cumTenGame)}%</td>
+                      </tr>
+                    </table>
+
+                  </div>
+                  <div className='pop-border border-bottom' style={{ backgroundColor: this.props.homeColors.colors.secondary }}>
+                  </div>
+                </div>
+              </div>)
+          }) : ''}
         </div>
       </div>
     );

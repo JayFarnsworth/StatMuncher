@@ -126,6 +126,12 @@ class App extends Component {
   //     awayPitcher: away
   //   })
   // }
+  getCumMatch = (homeCum, awayCum) => {
+    this.setState({
+      homeCum: homeCum, 
+      awayCum: awayCum
+    })
+  }
 
 
   render() {
@@ -145,6 +151,8 @@ class App extends Component {
               awayColors={this.state.awayColors}
             />
             <Pitchers
+              homeCum={this.state.homeCum}
+              awayCum={this.state.awayCum}
               homeColors={this.state.homeColors}
               awayColors={this.state.awayColors}
               gameObj={this.state.selectedGame}
@@ -154,6 +162,7 @@ class App extends Component {
               getYear={this.getYear}
             />
             <MainLineup
+              getCumMatch={this.getCumMatch}
               homeColors={this.state.homeColors}
               awayColors={this.state.awayColors}
               selectedYear={this.state.selectedYear}
