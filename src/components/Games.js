@@ -11,17 +11,25 @@ class Games extends Component {
     }
   }
   componentDidMount = () => {
-    let url = 'http://localhost:4000/gamesfetch/?date=20170920';
-    var games = async () => {
-      const response = await fetch(url, {
-        credentials: 'same-origin',
-        method: 'GET',
-        mode: 'cors'
-      });
-      const json = await response.json();
-      this.setState({ games: json });
-    } 
-    games();
+    let url = 'https://statmuncher-server.herokuapp.com/gamesfetch/?date=20170920';
+    // var games = async () => {
+    //   const response = await fetch(url, {
+    //     credentials: 'same-origin',
+    //     method: 'GET',
+    //     mode: 'cors'
+    //   });
+    //   const json = await response.json();
+    //   this.setState({ games: json });
+    // } 
+    // games();
+    fetch(url, {
+      credentials: 'same-origin',
+      method: 'GET',
+      mode: 'cors'
+    }).then(resp=>resp.json())
+    .then(resp=>{
+      this.setState({ games: resp });
+    })
   }
   fetchDailyStarters = (event) => {
     var gameId = event.currentTarget.id;

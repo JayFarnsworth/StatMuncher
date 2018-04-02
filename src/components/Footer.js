@@ -1,10 +1,11 @@
 import React from 'react';
+import logo from '../assets/StatMuncher.png'
 
 export default function Footer() {
   return (
     <footer>
       <div id='footer-left'>
-        <h1>STAT MUNCHER</h1>
+        <img src={logo} className='footer-logo'/>
         <h2>Built with love by Jay Farnsworth</h2>
       </div>
       <nav>

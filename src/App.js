@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import Options from './components/Options';
 import player_list from './assets/playerObject.json';
 import gameObj from './assets/gameObjFull20170920a.json';
+import logo from './assets/logo.png'
 
 class App extends Component {
   constructor(props){

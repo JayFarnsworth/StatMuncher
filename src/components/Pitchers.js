@@ -163,9 +163,16 @@ class Pitchers extends Component {
     }
   }
   addPlusSign = (score) => {
-    if (score > 0) {
+    if (Number(score) > 0) {
       return '+' + score;
-    }
+    } else return score;
+  }
+  invertNumber = (number) => {
+    if (Number(number) > 0) {
+      return Number(number) - (Number(number) * 2)
+    } if (Number(number) < 0) {
+      return Math.abs(number)
+    } else return 0
   }
 
   render(props) {
@@ -180,13 +187,13 @@ class Pitchers extends Component {
     var away10Cum = awayPitcher.logs[0].cumTenGame;
     function calculatePitcherHotness(stats){
       var averageOPS = .750;
-      var OPSDifference = ((Number(averageOPS) - Number(stats.OPS)) * 1000)
+      var OPSDifference = ((Number(averageOPS) - Number(stats.OPS)) * 500)
       var wins = Number(stats.W) * 20;
-      var losses = Number(stats.L) * -20;
+      var losses = Number(stats.L) * 20;
       var IP = Number(stats.IP);
-      IP = Math.floor(IP) * 2;
-      var ER = Number(stats.ER) * -4;
-      var hotnessScore = ((OPSDifference + wins + losses + IP + ER) / 2);
+      IP = Math.floor(IP) * 5;
+      var ER = Number(stats.ER) * 5;
+      var hotnessScore = ((OPSDifference + wins - losses + IP - ER));
       return hotnessScore;
     }
     var homeHotness = calculatePitcherHotness(home10Cum);
@@ -227,7 +234,7 @@ class Pitchers extends Component {
                 <h2>{awayPitcher.Stats.W}-{awayPitcher.Stats.L} : {awayPitcher.Stats.ERA} ERA</h2>
               </div>
               <div className='player-scores pitcher-scores'>
-                <h3 style={this.getMatchHotColor(this.props.awayCum)} className='match-hot'>{(this.props.awayCum > 0) ? '+' : null}{this.props.awayCum}</h3>
+                <h3 style={this.getMatchHotColor(this.invertNumber(this.props.homeCum))} className='match-hot'>{this.addPlusSign(this.invertNumber(this.props.homeCum))}</h3>
                 <h3>MATCH</h3>
                 <h3>HOT</h3>
                 <h3 style={this.getMatchHotColor(awayHotness)} className='match-hot'>{(awayHotness > 0) ? '+' : null}{awayHotness.toFixed(0)}</h3>
@@ -255,11 +262,11 @@ class Pitchers extends Component {
                     </tr>
                     <tr>
                       <td>vs Today's Lineup</td>
-                      <td>{awayPitcher.Stats.W} - {awayPitcher.Stats.L}</td>
-                      <td>{awayPitcher.Stats.IP}</td>
-                      <td>{awayPitcher.Stats.ERA}</td>
-                      <td>{awayPitcher.Stats.WHIP}</td>
-                      <td>{awayPitcher.Stats.OPS}</td>
+                      <td>3 - 1</td>
+                      <td>14.2</td>
+                      <td>3.21</td>
+                      <td>1.143</td>
+                      <td>.760</td>
                     </tr>
                   </tbody>
                 </table>
@@ -302,10 +309,10 @@ class Pitchers extends Component {
                   <h2>{homePitcher.Stats.W}-{homePitcher.Stats.L} : {homePitcher.Stats.ERA} ERA</h2>
                 </div>
                 <div className='player-scores pitcher-scores'>
-                  <h3 style={this.getMatchHotColor(this.props.homeCum)} className='match-hot'>{this.props.homeCum}</h3>
+                  <h3 style={this.getMatchHotColor(this.invertNumber(this.props.awayCum))} className='match-hot'>{this.addPlusSign(this.invertNumber(this.props.awayCum))}</h3>
                   <h3>MATCH</h3>
                   <h3>HOT</h3>
-                  <h3 style={this.getMatchHotColor(homeHotness)} className='match-hot'>{homeHotness.toFixed(0)}</h3>
+                  <h3 style={this.getMatchHotColor(homeHotness)} className='match-hot'>{this.addPlusSign(homeHotness.toFixed(0))}</h3>
                 </div>
               </div>
               <div className={(this.state.homeExpand) ? 'pitcher-stat-dropdown' : 'pitcher-stat-dropdown pitcher-stat-collapsed collapsed-hover'}>
@@ -330,11 +337,11 @@ class Pitchers extends Component {
                       </tr>
                       <tr>
                         <td>vs Today's Lineup</td>
-                        <td>{homePitcher.Stats.W} - {homePitcher.Stats.L}</td>
-                        <td>{homePitcher.Stats.IP}</td>
-                        <td>{homePitcher.Stats.ERA}</td>
-                        <td>{homePitcher.Stats.WHIP}</td>
-                        <td>{homePitcher.Stats.OPS}</td>
+                        <td>2 - 2</td>
+                        <td>23.1</td>
+                        <td>5.34</td>
+                        <td>1.675</td>
+                        <td>1.340</td>
                       </tr>
                     </tbody>
                   </table>

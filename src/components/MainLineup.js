@@ -70,9 +70,12 @@ class MainLineup extends Component {
     })
   }
   toggleDetails = (event) => {
-    let expandDetails = this.state.playerDetailsExpand;
-    expandDetails[event.currentTarget.id] = !expandDetails[event.currentTarget.id];
-    this.setState({playerDetailsExpand: expandDetails})
+    console.log(event.target.parentNode)
+    if (event.target.parentNode.className !== 'batting-order' && event.target.className !== 'outer-number-pos' && event.target.parentNode.className !== 'outer-number-pos') {
+      let expandDetails = this.state.playerDetailsExpand;
+      expandDetails[event.currentTarget.id] = !expandDetails[event.currentTarget.id];
+      this.setState({ playerDetailsExpand: expandDetails })
+    }
   }
   // fetchBatter = (batter) => {
   //   let id = batter.info.bref_id;
@@ -473,7 +476,7 @@ class MainLineup extends Component {
                       <h3>{(game.date).slice(6).replace("-", '/')}</h3>
                     </div>
                     <div className='game-stats-container'>
-                      <h3 className=''>{game.stats.H} / {game.stats.AB}</h3>
+                      <h2 className=''>{game.stats.H} / {game.stats.AB}</h2>
                       <h3>{(game.stats.HR === 1) ? 'HR' : (game.stats.HR > 1) ? game.stats.HR + ' HR' : null} {(game.stats.RBI === 1) ? 'RBI' : (game.stats.RBI > 1) ? game.stats.RBI + ' RBI' : null}</h3>
                       <h3>{(game.stats['2B'] === 1) ? '2B' : (game.stats['2B'] > 1) ? game.stats['2B'] + ' 2B' : null} {(game.stats['3B'] === 1) ? ' 3B' : (game.stats.BB === 1) ? ' BB' : (game.stats.BB > 1) ? game.stats.BB + ' BB' : (game.stats.SO > 0) ? game.stats.SO + 'K' : null}</h3>
                     </div>
@@ -484,7 +487,7 @@ class MainLineup extends Component {
             </div>
             <div className='player away' style={awayStyle} onMouseOver={this.detailsHover}>
               <div id={i} className='away-toggle' onClick={this.toggleAway} onMouseOver={this.awayHover}></div>
-              <div className='batting-order'>
+              <div className='batting-order' onClick={this.toggleAway}>
                 <div className='outer-number-pos'>
                   <h1>{(player.position.includes('BO')) ? 'DH' : player.position}</h1>
                   <h1>#{player.info.JerseyNumber}</h1>
@@ -639,7 +642,7 @@ class MainLineup extends Component {
                   </div>
                 </div>
                 <div className='player home' style={homeStyle} onMouseOver={this.detailsHover}>
-                  <div className='batting-order order-home'>
+                  <div className='batting-order order-home' onClick={this.toggleHome}>
                     <h1>{player.batOrder})</h1>
                     <div className='outer-number-pos'>
                       <h1>{(player.position.includes('BO')) ? 'DH' : player.position}</h1>
