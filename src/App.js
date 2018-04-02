@@ -144,7 +144,7 @@ class App extends Component {
         <Games
           setGameData={this.setGameData}
         />
-        <div><h1>Maintenence is needed to alter my servers from dummy data (9/20/2017) to live data from the season. This change should occur within the week. Thanks for your patience.</h1></div>
+        {(this.state.selectedGame) ? null : <div style={{marginTop: '4vh'}}><h1>Maintenence is needed to alter my servers from dummy data (9/20/2017) to live data from the season. This change should occur within the week. Thanks for your patience.</h1></div>}
         {(this.state.selectedGame) ? 
           <div className='lineup-wrapper'>
             <Teams
