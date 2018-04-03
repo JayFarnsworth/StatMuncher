@@ -54,6 +54,25 @@ body {
 	overflow-x: hidden;
 }
 /* header */
+.server-down {
+	position: fixed;
+  top: 25vh;
+	left: 30vw;
+	width: 35vw;
+	height: 25vh;
+	background-color: rgba(128, 128, 128, 0.8);
+	border: 1px solid black;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 5vh 5vw;
+	font-size: 1.5vh;
+}
+.server-down h1 {
+	font-size: 2vh;
+	font-family: 'Roboto', sans-serif;
+}
 header {
 	height: 7vh;
 	width: 100vw;
